@@ -1,0 +1,84 @@
+1.
+	For this program 4 shared memory sections are created for a[], x[], y[]
+	and f[]. Here a[] is the array being input for the qsort program, x[],
+	and y[] are the sorted input arrays for the merge sort program, and f[]
+	here is the resulting array with the merger of x[] and y[].
+	First and foremost main reads in all the input from a file and writes the
+	information into a string named strBig. Then strtok function is used 
+	to tokenize the next number of inputs and then the arrays inputs itself 
+	and are put in the respective arrays a[], x[], and y[]. 
+	
+	After this arguments are created and stored into argsQ for qsort and argsM 
+	for merge to create new processes using execvp(). Then qsort takes in 
+	the passed in values of initial left bound, right bound and shared memory 
+	ID of a[] to be sorted. Qsort uses a pivot and forks to spilt the array into 
+	two different sctions using a partition mechanism, and the split sections
+	are sorted without the use of any auxilary arrays until the sections 
+	cannot be partitioned any further. Once the array is sorted completely
+	the main accesses the instance of the shared memory of a[] and prints out 
+	the results.
+
+	After this, a second fork call will execvp merge.c and pass in the arguements
+	which are shared memory IDs of x[], y[], and f[]. It also takes in m, n, 
+	which are the sizes of the inout arrays to be merged. Now, main in merge
+	creates m+n child processes to handle each element from x[], and y[] 
+	and position them into their correct places in f[], this is done using 
+	a modified binary search algorithm in a recursive manner. Once the process
+	exits, main accesses the instance of shared memory of f[] to print out the
+	results. 
+
+2.
+	The program uses concurrency and uses 4 different shared memory sections
+	to avoid race conditions. 
+
+	In qsort, 2 processes are created simultaenously and the left and right 
+	sections of pivot are sorted concurrently, this can be verified by 
+	looking at the PIDs orders of the processes being executed in the 
+	result outputs.
+
+	In merge, m+n processes are running concurrently to perform binary search 
+	on the input arrays, concurrency can be verified by looking at the varying 
+	PID of executing processes. 
+
+3.	
+	All shared memory sections are created using unique keys using ftok 
+	function.
+	Shared memory sections created for:
+	a[] --> used to take inputs for qsort program and the values in the 
+			memory section are sorted using qsort program, by passing its
+			shared memory ID to qsort.
+	x[], y[], f[] --> x, and y are created to take in the inputs of 
+					  already sorted array, then these are passed to
+					  merge where memory gets attached to them, and f is 
+					  populated with the elements of x and y with correct
+					  positions.
+
+4.
+	To avoid race conditions I have created 4 different memory sections
+	to be manipulated individually, and since they are compartmentalized 
+	whenever one memory section is being manipulated, it does not affect 
+	the other. There might be race condition involving the printing since
+	write works as atomic intruction and can not be interrupted, so whenever
+	scheduler schedules them is when they execute. 
+
+5.
+	For qsort the arguments are stored into a character array, using different
+	stirngs to avoid overwriting of data, data is first written into these 
+	strings using sprintf function, and then these strings are stored into
+	the character array and passed into qsort using excvp. 
+	As you can see in the program, argsQ[0] contains the program name "./qsort",
+	argsQ[1] is initial left bound, argsQ[2] is initial right bound,
+	argsQ[3] is shared memory ID of a[], argsQ[4] is NULL, which is end 
+	of argument list.
+
+6.
+	For merge, it works the same way, 
+	argsM[0] is program name"./merge"
+	argsM[1] is shared memory ID of x[]	 
+	argsM[2] is shared memory ID of y[]
+	argsM[3] is shared memory ID of f[]
+	argsM[4] is size of x[]
+	argsM[5] is size of y[]
+	argsM[6] is NULL, the end of arguments
+
+
